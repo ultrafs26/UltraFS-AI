@@ -77,6 +77,14 @@ UltraFS AI
 📊 Product Database
 </div>
 
+<div id="result"
+style="
+margin:20px;
+padding:20px;
+background:#1f1f1f;
+border-radius:15px;">
+</div>
+    
 <div class="summary">
 
 <h2>Today's Summary</h2>
@@ -90,9 +98,17 @@ UltraFS AI
 </div>
     
 <script>
-function analyzeProduct() {
-    alert("UltraFS AI is being connected. Next step: we'll connect it to Gemini AI.");
+
+async function analyzeProduct() {
+
+const product = prompt("Paste Meesho or GlowRoad product link:");
+
+if(!product) return;
+
+document.getElementById("result").innerHTML="⏳ UltraFS AI is analyzing...";
+
 }
+    
 </script>
     
 </body>
