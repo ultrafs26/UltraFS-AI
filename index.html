@@ -108,21 +108,22 @@ async function analyzeProduct() {
 
   try {
 
-    const response = await fetch("https://script.google.com/macros/s/AKfycbxjeqUZrmsfl7cSE4RV6Ye88S-uwMMrfG5K3XtzuLyuUD0pZbX9sZxv3x-RQPRop87E/exec", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    product: product
-  })
-});
+    const response = await fetch(
+  "https://script.google.com/macros/s/AKfycbxjeqUZrmsfl7cSE4RV6Ye88S-uwMMrfG5K3XtzuLyuUD0pZbX9sZxv3x-RQPRop87E/exec",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain;charset=UTF-8"
+    },
+    body: JSON.stringify({
+      product: product
+    })
+  }
+);
 
 const text = await response.text();
-
-    document.getElementById("result").innerHTML =
-      "<pre>" + text + "</pre>";
-
+document.getElementById("result").innerHTML =
+  "<pre>" + text + "</pre>";
   } catch (err) {
 
     document.getElementById("result").innerHTML =
