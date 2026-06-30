@@ -54,6 +54,167 @@
             border-radius: 15px;
             text-align: left;
             line-height: 1.6;
+            display: none;
+        }
+        .badge {
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .caption-box {
+            background: #111;
+            padding: 12px;
+            border-radius: 8px;
+            font-style: italic;
+            border-left: 3px solid gold;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    UltraFS AI
+</div>
+
+<div class="container">
+    <div class="card" onclick="analyzeProduct()">
+        🔍 Analyze Product
+    </div>
+
+    <div class="card">
+        💰 Selling Price Calculator
+    </div>
+
+    <div class="card">
+        📱 Instagram Post Generator
+    </div>
+
+    <div class="card">
+        📊 Product Database
+    </div>
+
+    <div id="result-box">
+        <div id="loading-text" style="text-align: center;">⏳ UltraFS AI is analyzing your product metrics...</div>
+        
+        <div id="analysis-content" style="display: none;">
+            <h3 id="res-productName">📦 Product Metrics</h3>
+            <p><strong>Category:</strong> <span id="res-category"></span></p>
+            <p><strong>Resale Score:</strong> ⭐ <span id="res-score"></span>/100 (Trend: <span id="res-trendScore"></span>%)</p>
+            <p><strong>Supplier Cost:</strong> ₹<span id="res-supplierPrice"></span></p>
+            <p><strong>Recommended Selling Price:</strong> ₹<span id="res-sellingPrice"></span></p>
+            <p><strong>Estimated Profit Margin:</strong> <span id="res-estimatedProfit" style="color: #00ff88; font-weight:bold;"></span></p>
+            <p><strong>Competition:</strong> <span id="res-competition"></span></p>
+            <p><strong>Target Audience:</strong> <span id="res-targetAudience"></span></p>
+            <p><strong>Decision:</strong> <span id="res-recommendation" class="badge"></span></p>
+            <p><strong>Analysis:</strong> <span id="res-reason"></span></p>
+            <hr style="border-color: #333; margin: 15px 0;">
+            <p style="color: gold; font-weight: bold; margin-bottom: 5px;">📱 Instagram Copywriting:</p>
+            <p id="res-instagramCaption" class="caption-box"></p>
+            <p id="res-hashtags" style="color: #00bcd4; font-size: 14px;"></p>
+        </div>
+    </div>
+        
+    <div class="summary">
+        <h2 style="text-align: center;">Today's Summary</h2>
+        <p>Approved Products : 0</p>
+        <p>Expected Profit : ₹0</p>
+    </div>
+</div>
+    
+<script>
+async function analyzeProduct() {
+  const product = prompt("Paste Meesho or GlowRoad product link:");
+  if (!product) return;
+
+  const resultBox = document.getElementById("result-box");
+  const loadingText = document.getElementById("loading-text");
+  const contentDiv = document.getElementById("analysis-content");
+
+  // Show container and loading status
+  resultBox.style.display = "block";
+  loadingText.style.display = "block";
+  loadingText.innerHTML = "⏳ UltraFS AI is analyzing your product metrics...";
+  contentDiv.style.display = "none";
+
+  try {
+    const response = await fetch(
+      "https://script.google.com/macros/s/AKfycbxjeqUZrmsfl7cSE4RV6Ye88S-uwMMrfG5K3XtzuLyuUD0pZbX9sZxv3x-RQPRop87E/exec", 
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=UTF-8"
+        },
+        body: JSON.stringify({ product: product })
+      }
+    );
+
+    const text = await response.text();
+    const data = JSON.parse(text);
+
+    if (data.error) {
+      loadingText.innerHTML = "❌ <strong>Backend Error:</strong><br>" + data.error;
+      return;
+    }
+
+    // Switch from loading view to metrics display
+    loadingText.style.display = "none";
+    contentDiv.style.display = "block";
+
+    // Inject data securely via innerText to protect against script injection or formatting breaks
+    document.getElementById("res-productName").innerText = "📦 " + (data.productName || "Product Analysis");
+    document.getElementById("res-category").innerText = data.category || "N/A";
+    document.getElementById("res-score").innerText = data.score || 0;
+    document.getElementById("res-trendScore").innerText = data.trendScore || 0;
+    document.getElementById("res-supplierPrice").innerText = data.supplierPrice || 0;
+    document.getElementById("res-sellingPrice").innerText = data.sellingPrice || 0;
+    document.getElementById("res-estimatedProfit").innerText = "₹" + (data.estimatedProfit || 0);
+    document.getElementById("res-competition").innerText = data.competition || "N/A";
+    document.getElementById("res-targetAudience").innerText = data.targetAudience || "N/A";
+    document.getElementById("res-reason").innerText = data.reason || "N/A";
+    document.getElementById("res-instagramCaption").innerText = data.instagramCaption || "N/A";
+    
+    // Format hashtags safely
+    const hashText = Array.isArray(data.hashtags) ? data.hashtags.join(' ') : (data.hashtags || '');
+    document.getElementById("res-hashtags").innerText = hashText;
+
+    // Adjust UI recommendation colors
+    const recBadge = document.getElementById("res-recommendation");
+    recBadge.innerText = data.recommendation || "PENDING";
+    if (data.recommendation === "BUY") {
+        recBadge.style.background = "#1b5e20";
+    } else {
+        recBadge.style.background = "#b71c1c";
+    }
+
+  } catch (err) {
+    loadingText.innerHTML = "❌ Connection Error:<br>" + err;
+  }
+}
+</script>
+    
+</body>
+</html>
+            background: #2f2f2f;
+        }
+        .summary {
+            margin-top: 30px;
+            background: #1f1f1f;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: left;
+        }
+        h2, h3 {
+            color: gold;
+            margin-top: 0;
+        }
+        #result-box {
+            margin: 20px 0;
+            padding: 20px;
+            background: #1f1f1f;
+            border-radius: 15px;
+            text-align: left;
+            line-height: 1.6;
             display: none; /* Stays hidden until requested */
         }
         .badge {
