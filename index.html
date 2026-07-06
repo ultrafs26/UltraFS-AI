@@ -30,7 +30,7 @@
 
 <div class="container">
     <div class="card" onclick="analyzeProduct()">🔍 Analyze Product</div>
-    <div class="card">💰 Selling Price Calculator</div>
+    <div class="card" onclick="sellingCalculator()">💰 Selling Price Calculator</div>
     <div class="card">📱 Instagram Post Generator</div>
     
     <div class="card" onclick="window.open('https://docs.google.com/spreadsheets/d/1nJ5j1wT1MUdoCllVfihYhtHsfMK-iq5lwBhu5dVn24g/edit?usp=drivesdk', '_blank')">📊 Product Database</div>
@@ -139,7 +139,59 @@ async function analyzeProduct() {
     loadingText.innerHTML = "❌ Connection Error:<br>" + err;
   }
 }
+}   // <-- analyzeProduct() ends here
 
+// =========================
+// Selling Price Calculator
+// =========================
+
+function sellingCalculator() {
+
+    const cost = Number(prompt("Enter Supplier Price (₹)"));
+
+    if (!cost || cost <= 0) {
+        alert("Please enter a valid supplier price.");
+        return;
+    }
+
+    const margin = Number(prompt("Enter Profit Margin (%)", "40"));
+
+    if (!margin || margin <= 0 || margin >= 100) {
+        alert("Please enter a valid margin.");
+        return;
+    }
+
+    const sellingPrice = Math.ceil(cost / (1 - (margin / 100)));
+    const profit = sellingPrice - cost;
+    const roi = ((profit / cost) * 100).toFixed(1);
+
+    document.getElementById("result-box").style.display = "block";
+    document.getElementById("loading-text").style.display = "none";
+    document.getElementById("analysis-content").style.display = "block";
+    document.getElementById("decision-block").style.display = "none";
+
+    document.getElementById("res-productName").innerText = "💰 Selling Price Calculator";
+    document.getElementById("res-category").innerText = "-";
+    document.getElementById("res-score").innerText = "-";
+    document.getElementById("res-trendScore").innerText = "-";
+    document.getElementById("res-supplierPrice").innerText = cost;
+    document.getElementById("res-sellingPrice").innerText = sellingPrice;
+    document.getElementById("res-estimatedProfit").innerText = "₹" + profit;
+    document.getElementById("res-competition").innerText = "-";
+    document.getElementById("res-targetAudience").innerText = "-";
+    document.getElementById("res-recommendation").innerText = "CALCULATED";
+    document.getElementById("res-recommendation").style.background = "#1565c0";
+    document.getElementById("res-reason").innerText =
+        `Profit Margin: ${margin}% | ROI: ${roi}%`;
+    document.getElementById("res-instagramCaption").innerText =
+        "Selling price calculated successfully.";
+    document.getElementById("res-hashtags").innerText = "";
+}
+
+// Controller function evaluating button dashboard changes selection action inputs
+function recordAction(status) {
+
+    
 // Controller function evaluating button dashboard changes selection action inputs
 function recordAction(status) {
     if (status === 'APPROVE') {
