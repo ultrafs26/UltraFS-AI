@@ -1,210 +1,456 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UltraFS AI</title>
-    <style>
-        body { margin: 0; font-family: Arial, sans-serif; background: #111; color: white; text-align: center; }
-        .header { background: #000; padding: 20px; font-size: 28px; font-weight: bold; border-bottom: 2px solid gold; }
-        .container { padding: 20px; max-width: 600px; margin: 0 auto; }
-        .card { background: #1f1f1f; margin: 15px 0; padding: 18px; border-radius: 15px; cursor: pointer; font-size: 18px; transition: background 0.2s; }
-        .card:hover { background: #2f2f2f; }
-        .summary { margin-top: 30px; background: #1f1f1f; padding: 20px; border-radius: 15px; text-align: left; }
-        h2, h3 { color: gold; margin-top: 0; }
-        #result-box { margin: 20px 0; padding: 20px; background: #1f1f1f; border-radius: 15px; text-align: left; line-height: 1.6; display: none; }
-        .badge { padding: 3px 8px; border-radius: 5px; font-weight: bold; }
-        .caption-box { background: #111; padding: 12px; border-radius: 8px; font-style: italic; border-left: 3px solid gold; white-space: pre-wrap; }
-        
-        /* New Button Styles */
-        .btn-container { display: flex; gap: 12px; margin-top: 20px; }
-        .btn-approve { flex: 1; background: #2e7d32; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        .btn-approve:hover { background: #1b5e20; }
-        .btn-reject { flex: 1; background: #c62828; color: white; border: none; padding: 14px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
-        .btn-reject:hover { background: #b71c1c; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UltraFS AI</title>
+<style>
+body {
+margin: 0;
+font-family: Arial, sans-serif;
+background: #111;
+color: white;
+text-align: center;
+}
+.header {
+background: #000;
+padding: 20px;
+font-size: 28px;
+font-weight: bold;
+border-bottom: 2px solid gold;
+}
+.container {
+padding: 20px;
+max-width: 600px;
+margin: 0 auto;
+}
+.card {
+background: #1f1f1f;
+margin: 15px 0;
+padding: 18px;
+border-radius: 15px;
+cursor: pointer;
+font-size: 18px;
+transition: background 0.2s, transform 0.1s;
+}
+.card:hover {
+background: #2f2f2f;
+transform: translateY(-2px);
+}
+.summary {
+margin-top: 30px;
+background: #1f1f1f;
+padding: 20px;
+border-radius: 15px;
+text-align: left;
+}
+h2, h3 {
+color: gold;
+margin-top: 0;
+}
+#result-box {
+margin: 20px 0;
+padding: 20px;
+background: #1f1f1f;
+border-radius: 15px;
+text-align: left;
+line-height: 1.6;
+display: none;
+}
+.badge {
+padding: 3px 8px;
+border-radius: 5px;
+font-weight: bold;
+}
+.caption-box {
+background: #111;
+padding: 12px;
+border-radius: 8px;
+font-style: italic;
+border-left: 3px solid gold;
+white-space: pre-wrap;
+}
+.btn-container {
+display: flex;
+gap: 12px;
+margin-top: 20px;
+}
+.btn-approve {
+flex: 1;
+background: #2e7d32;
+color: white;
+border: none;
+padding: 14px;
+border-radius: 10px;
+font-size: 16px;
+font-weight: bold;
+cursor: pointer;
+transition: background 0.2s;
+}
+.btn-approve:hover {
+background: #1b5e20;
+}
+.btn-reject {
+flex: 1;
+background: #c62828;
+color: white;
+border: none;
+padding: 14px;
+border-radius: 10px;
+font-size: 16px;
+font-weight: bold;
+cursor: pointer;
+transition: background 0.2s;
+}
+.btn-reject:hover {
+background: #b71c1c;
+}
+/* Modal Overlay & Card Styling for Calculator */
+.modal {
+display: none;
+position: fixed;
+z-index: 1000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+background: rgba(0, 0, 0, 0.85);
+backdrop-filter: blur(5px);
+align-items: center;
+justify-content: center;
+}
+.modal-content {
+background: #1f1f1f;
+padding: 25px;
+border-radius: 20px;
+border: 2px solid gold;
+width: 90%;
+max-width: 450px;
+text-align: left;
+box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+box-sizing: border-box;
+}
+.modal-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 20px;
+border-bottom: 1px solid #333;
+padding-bottom: 10px;
+}
+.modal-close {
+color: #aaa;
+font-size: 28px;
+font-weight: bold;
+cursor: pointer;
+transition: color 0.2s;
+}
+.modal-close:hover {
+color: gold;
+}
+.form-group {
+margin-bottom: 15px;
+}
+.form-group label {
+display: block;
+margin-bottom: 5px;
+font-size: 14px;
+color: #ccc;
+}
+.form-group input {
+width: 100%;
+padding: 10px;
+background: #111;
+border: 1px solid #444;
+border-radius: 8px;
+color: white;
+font-size: 16px;
+box-sizing: border-box;
+}
+.form-group input:focus {
+border-color: gold;
+outline: none;
+}
+.calc-results {
+background: #111;
+padding: 15px;
+border-radius: 12px;
+margin-top: 20px;
+border-left: 4px solid #00ff88;
+}
+.calc-row {
+display: flex;
+justify-content: space-between;
+margin-bottom: 8px;
+font-size: 15px;
+}
+.calc-row:last-child {
+margin-bottom: 0;
+border-top: 1px solid #333;
+padding-top: 8px;
+font-weight: bold;
+}
+.action-link {
+display: inline-block;
+margin-top: 10px;
+color: gold;
+text-decoration: none;
+font-size: 14px;
+cursor: pointer;
+font-weight: bold;
+}
+.action-link:hover {
+text-decoration: underline;
+}
+.toast-msg {
+display: none;
+position: fixed;
+bottom: 20px;
+left: 50%;
+transform: translateX(-50%);
+background: #333;
+color: #fff;
+padding: 10px 20px;
+border-radius: 20px;
+font-size: 14px;
+border: 1px solid gold;
+z-index: 2000;
+}
+</style>
 </head>
 <body>
-
 <div class="header">UltraFS AI</div>
-
 <div class="container">
-    <div class="card" onclick="analyzeProduct()">🔍 Analyze Product</div>
-    <div class="card" onclick="sellingCalculator()">💰 Selling Price Calculator</div>
-    <div class="card">📱 Instagram Post Generator</div>
-    
-    <div class="card" onclick="window.open('https://docs.google.com/spreadsheets/d/1nJ5j1wT1MUdoCllVfihYhtHsfMK-iq5lwBhu5dVn24g/edit?usp=drivesdk', '_blank')">📊 Product Database</div>
-
-    <div id="result-box">
-        <div id="loading-text" style="text-align: center;">⏳ UltraFS AI is analyzing your product metrics...</div>
-        <div id="analysis-content" style="display: none;">
-            <h3 id="res-productName">📦 Product Metrics</h3>
-            <p><strong>Category:</strong> <span id="res-category"></span></p>
-            <p><strong>Resale Score:</strong> ⭐ <span id="res-score"></span>/100 (Trend: <span id="res-trendScore"></span>%)</p>
-            <p><strong>Supplier Cost:</strong> ₹<span id="res-supplierPrice"></span></p>
-            <p><strong>Recommended Selling Price:</strong> ₹<span id="res-sellingPrice"></span></p>
-            <p><strong>Estimated Profit Margin:</strong> <span id="res-estimatedProfit" style="color: #00ff88; font-weight:bold;"></span></p>
-            <p><strong>Competition:</strong> <span id="res-competition"></span></p>
-            <p><strong>Target Audience:</strong> <span id="res-targetAudience"></span></p>
-            <p><strong>Decision:</strong> <span id="res-recommendation" class="badge"></span></p>
-            <p><strong>Analysis:</strong> <span id="res-reason"></span></p>
-            <hr style="border-color: #333; margin: 15px 0;">
-            <p style="color: gold; font-weight: bold; margin-bottom: 5px;">📱 Instagram Copywriting:</p>
-            <p id="res-instagramCaption" class="caption-box"></p>
-            <p id="res-hashtags" style="color: #00bcd4; font-size: 14px;"></p>
-            
-            <div class="btn-container" id="decision-block">
-                <button class="btn-approve" onclick="recordAction('APPROVE')">🟢 Approve</button>
-                <button class="btn-reject" onclick="recordAction('REJECT')">🔴 Reject</button>
-            </div>
-        </div>
-    </div>
-        
-    <div class="summary">
-        <h2 style="text-align: center;">Today's Summary</h2>
-        <p>Approved Products : <span id="summary-approved" style="font-weight: bold; color: gold;">0</span></p>
-        <p>Expected Profit : <span id="summary-profit" style="font-weight: bold; color: #00ff88;">₹0</span></p>
-    </div>
+<div class="card" onclick="analyzeProduct()">🔍 Analyze Product</div>
+<div class="card" onclick="openCalculator()">💰 Selling Price Calculator</div>
+<div class="card">📱 Instagram Post Generator</div>
+<div class="card" onclick="window.open('https://docs.google.com/spreadsheets/d/1nJ5j1wT1MUdoCllVfihYhtHsfMK-iq5lwBhu5dVn24g/edit?usp=drivesdk', '_blank')">📊 Product Database</div>
+<div id="result-box">
+<div id="loading-text" style="text-align: center;">⏳ UltraFS AI is analyzing your product metrics...</div>
+<div id="analysis-content" style="display: none;">
+<h3 id="res-productName">📦 Product Metrics</h3>
+<p><strong>Category:</strong> <span id="res-category"></span></p>
+<p><strong>Resale Score:</strong> ⭐ <span id="res-score"></span>/100 (Trend: <span id="res-trendScore"></span>%)</p>
+<p><strong>Supplier Cost:</strong> ₹<span id="res-supplierPrice"></span></p>
+<p><strong>Recommended Selling Price:</strong> ₹<span id="res-sellingPrice"></span></p>
+<p><strong>Estimated Profit Margin:</strong> <span id="res-estimatedProfit" style="color: #00ff88; font-weight:bold;"></span></p>
+<p><strong>Competition:</strong> <span id="res-competition"></span></p>
+<p><strong>Target Audience:</strong> <span id="res-targetAudience"></span></p>
+<p><strong>Decision:</strong> <span id="res-recommendation" class="badge"></span></p>
+<p><strong>Analysis:</strong> <span id="res-reason"></span></p>
+<hr style="border-color: #333; margin: 15px 0;">
+<p style="color: gold; font-weight: bold; margin-bottom: 5px;">📱 Instagram Copywriting:</p>
+<p id="res-instagramCaption" class="caption-box"></p>
+<p id="res-hashtags" style="color: #00bcd4; font-size: 14px;"></p>
+<div class="btn-container" id="decision-block">
+<button class="btn-approve" onclick="recordAction('APPROVE')">🟢 Approve</button>
+<button class="btn-reject" onclick="recordAction('REJECT')">🔴 Reject</button>
 </div>
-    
+</div>
+</div>
+<div class="summary">
+<h2 style="text-align: center;">Today's Summary</h2>
+<p>Approved Products : <span id="summary-approved" style="font-weight: bold; color: gold;">0</span></p>
+<p>Expected Profit : <span id="summary-profit" style="font-weight: bold; color: #00ff88;">₹0</span></p>
+</div>
+</div>
+<!-- Interactive Calculator Modal UI -->
+<div id="calculator-modal" class="modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3>💰 Margin Calculator</h3>
+<span class="modal-close" onclick="closeCalculator()">×</span>
+</div>
+<div class="form-group">
+<label for="calc-supplier">Supplier Price (₹)</label>
+<input type="number" id="calc-supplier" placeholder="e.g. 500" value="500" oninput="calculateSellingMetrics()">
+</div>
+<div class="form-group">
+<label for="calc-shipping">Shipping Charges (₹)</label>
+<input type="number" id="calc-shipping" placeholder="e.g. 70" value="70" oninput="calculateSellingMetrics()">
+</div>
+<div class="form-group">
+<label for="calc-packaging">Packaging & Handling (₹)</label>
+<input type="number" id="calc-packaging" placeholder="e.g. 30" value="30" oninput="calculateSellingMetrics()">
+</div>
+<div class="form-group">
+<label for="calc-margin">Target Profit Margin (%)</label>
+<input type="number" id="calc-margin" placeholder="e.g. 40" value="40" oninput="calculateSellingMetrics()">
+</div>
+<div class="calc-results">
+<div class="calc-row">
+<span>Total Base Cost:</span>
+<span>₹<span id="res-total-cost">600</span></span>
+</div>
+<div class="calc-row">
+<span>Profit Amount:</span>
+<span style="color: #00ff88;">+₹<span id="res-profit-amt">400</span></span>
+</div>
+<div class="calc-row">
+<span>Return on Investment:</span>
+<span style="color: #00bcd4;"><span id="res-calc-roi">66.7</span>%</span>
+</div>
+<div class="calc-row" style="color: gold; font-size: 18px;">
+<span>Selling Price:</span>
+<span>₹<span id="res-selling-calc">1000</span></span>
+</div>
+</div>
+<div style="display: flex; justify-content: space-between; margin-top: 15px;">
+<span class="action-link" onclick="copyCalculatedPrice()">📋 Copy Price</span>
+<span class="action-link" onclick="addCalculatorToSummary()">➕ Add Profit to Summary</span>
+</div>
+</div>
+</div>
+<!-- Toast notifications for clipboard operations -->
+<div id="toast" class="toast-msg"></div>
 <script>
-// Dashboard Memory Storage States
 let currentProfitAmount = 0;
 let approvedCount = 0;
 let cumulativeProfit = 0;
-
 async function analyzeProduct() {
-  const product = prompt("Paste Meesho or GlowRoad product link:");
-  if (!product) return;
-
-  const resultBox = document.getElementById("result-box");
-  const loadingText = document.getElementById("loading-text");
-  const contentDiv = document.getElementById("analysis-content");
-  const decisionBlock = document.getElementById("decision-block");
-
-  resultBox.style.display = "block";
-  loadingText.style.display = "block";
-  loadingText.innerHTML = "⏳ UltraFS AI is analyzing metrics and archiving data row...";
-  contentDiv.style.display = "none";
-
-  try {
-    const response = await fetch(
-      "https://script.google.com/macros/s/AKfycbz4CYsLgZeZL3W14GgDcA5NLJfM0PlV1btLwfcPzrMY9YlYITc2QxRqFtajhLmcMVLJBg/exec", 
-      {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=UTF-8" },
-        body: JSON.stringify({ product: product })
-      }
-    );
-
-    const text = await response.text();
-    const data = JSON.parse(text);
-
-    if (data.error) {
-      loadingText.innerHTML = "❌ <strong>Analysis Error:</strong><br>" + data.error;
-      return;
-    }
-
-    loadingText.style.display = "none";
-    contentDiv.style.display = "block";
-    decisionBlock.style.display = "flex"; // Reset layout status buttons block display
-
-    // Track state metrics for local summary addition logic engine calculations
-    currentProfitAmount = Number(data.estimatedProfit) || 0;
-
-    document.getElementById("res-productName").innerText = "📦 " + (data.productName || "Product Analysis");
-    document.getElementById("res-category").innerText = data.category || "N/A";
-    document.getElementById("res-score").innerText = data.score || 0;
-    document.getElementById("res-trendScore").innerText = data.trendScore || 0;
-    document.getElementById("res-supplierPrice").innerText = data.supplierPrice || 0;
-    document.getElementById("res-sellingPrice").innerText = data.sellingPrice || 0;
-    document.getElementById("res-estimatedProfit").innerText = "₹" + currentProfitAmount;
-    document.getElementById("res-competition").innerText = data.competition || "N/A";
-    document.getElementById("res-targetAudience").innerText = data.targetAudience || "N/A";
-    document.getElementById("res-reason").innerText = data.reason || "N/A";
-    document.getElementById("res-instagramCaption").innerText = data.instagramCaption || "N/A";
-    
-    const hashText = Array.isArray(data.hashtags) ? data.hashtags.join(' ') : (data.hashtags || '');
-    document.getElementById("res-hashtags").innerText = hashText;
-
-    const recBadge = document.getElementById("res-recommendation");
-    recBadge.innerText = data.recommendation || "PENDING";
-    if (data.recommendation === "BUY") {
-        recBadge.style.background = "#1b5e20";
-    } else {
-        recBadge.style.background = "#b71c1c";
-    }
-
-  } catch (err) {
-    loadingText.innerHTML = "❌ Connection Error:<br>" + err;
-  }
+const product = prompt("Paste Meesho or GlowRoad product link:");
+if (!product) return;
+const resultBox = document.getElementById("result-box");
+const loadingText = document.getElementById("loading-text");
+const contentDiv = document.getElementById("analysis-content");
+const decisionBlock = document.getElementById("decision-block");
+resultBox.style.display = "block";
+loadingText.style.display = "block";
+loadingText.innerHTML = "⏳ UltraFS AI is analyzing and writing to database...";
+contentDiv.style.display = "none";
+try {
+const response = await fetch(
+"https://script.google.com/macros/s/AKfycbxjeqUZrmsfl7cSE4RV6Ye88S-uwMMrfG5K3XtzuLyuUD0pZbX9sZxv3x-RQPRop87E/exec", // Make sure this matches your NEW deployment URL
+{
+method: "POST",
+headers: { "Content-Type": "text/plain;charset=UTF-8" },
+body: JSON.stringify({ product: product })
 }
-}   // <-- analyzeProduct() ends here
-
-// =========================
-// Selling Price Calculator
-// =========================
-
-function sellingCalculator() {
-
-    const cost = Number(prompt("Enter Supplier Price (₹)"));
-
-    if (!cost || cost <= 0) {
-        alert("Please enter a valid supplier price.");
-        return;
-    }
-
-    const margin = Number(prompt("Enter Profit Margin (%)", "40"));
-
-    if (!margin || margin <= 0 || margin >= 100) {
-        alert("Please enter a valid margin.");
-        return;
-    }
-
-    const sellingPrice = Math.ceil(cost / (1 - (margin / 100)));
-    const profit = sellingPrice - cost;
-    const roi = ((profit / cost) * 100).toFixed(1);
-
-    document.getElementById("result-box").style.display = "block";
-    document.getElementById("loading-text").style.display = "none";
-    document.getElementById("analysis-content").style.display = "block";
-    document.getElementById("decision-block").style.display = "none";
-
-    document.getElementById("res-productName").innerText = "💰 Selling Price Calculator";
-    document.getElementById("res-category").innerText = "-";
-    document.getElementById("res-score").innerText = "-";
-    document.getElementById("res-trendScore").innerText = "-";
-    document.getElementById("res-supplierPrice").innerText = cost;
-    document.getElementById("res-sellingPrice").innerText = sellingPrice;
-    document.getElementById("res-estimatedProfit").innerText = "₹" + profit;
-    document.getElementById("res-competition").innerText = "-";
-    document.getElementById("res-targetAudience").innerText = "-";
-    document.getElementById("res-recommendation").innerText = "CALCULATED";
-    document.getElementById("res-recommendation").style.background = "#1565c0";
-    document.getElementById("res-reason").innerText =
-        `Profit Margin: ${margin}% | ROI: ${roi}%`;
-    document.getElementById("res-instagramCaption").innerText =
-        "Selling price calculated successfully.";
-    document.getElementById("res-hashtags").innerText = "";
+);
+const text = await response.text();
+LoggerFallback(text);
+let data;
+try {
+data = JSON.parse(text);
+} catch(jsonErr) {
+loadingText.innerHTML = ❌ <strong>Parsing Error:</strong> Backend sent raw non-JSON text:<br><pre style="background:#000; padding:10px; border-radius:5px; color:#ff3333; overflow-x:auto;">${text}</pre>;
+return;
 }
-
-// Controller function evaluating button dashboard changes selection action inputs
+if (data.error) {
+loadingText.innerHTML = "❌ <strong>Error:</strong>
+" + data.error;
+return;
+}
+loadingText.style.display = "none";
+contentDiv.style.display = "block";
+decisionBlock.style.display = "flex";
+currentProfitAmount = Number(data.estimatedProfit) || 0;
+document.getElementById("res-productName").innerText = "📦 " + (data.productName || "Product Analysis");
+document.getElementById("res-category").innerText = data.category || "N/A";
+document.getElementById("res-score").innerText = data.score || 0;
+document.getElementById("res-trendScore").innerText = data.trendScore || 0;
+document.getElementById("res-supplierPrice").innerText = data.supplierPrice || 0;
+document.getElementById("res-sellingPrice").innerText = data.sellingPrice || 0;
+document.getElementById("res-estimatedProfit").innerText = "₹" + currentProfitAmount;
+document.getElementById("res-competition").innerText = data.competition || "N/A";
+document.getElementById("res-targetAudience").innerText = data.targetAudience || "N/A";
+document.getElementById("res-reason").innerText = data.reason || "N/A";
+document.getElementById("res-instagramCaption").innerText = data.instagramCaption || "N/A";
+const hashText = Array.isArray(data.hashtags) ? data.hashtags.join(' ') : (data.hashtags || '');
+document.getElementById("res-hashtags").innerText = hashText;
+const recBadge = document.getElementById("res-recommendation");
+recBadge.innerText = data.recommendation || "PENDING";
+if (data.recommendation === "BUY") {
+recBadge.style.background = "#1b5e20";
+} else {
+recBadge.style.background = "#b71c1c";
+}
+} catch (err) {
+loadingText.innerHTML = "❌ Connection Error:
+" + err;
+}
+}
 function recordAction(status) {
-
-    
-// Controller function evaluating button dashboard changes selection action inputs
-function recordAction(status) {
-    if (status === 'APPROVE') {
-        approvedCount++;
-        cumulativeProfit += currentProfitAmount;
-        
-        // Dynamically alter the summary counters displayed on screen canvas text
-        document.getElementById("summary-approved").innerText = approvedCount;
-        document.getElementById("summary-profit").innerText = "₹" + cumulativeProfit;
-    }
-    
-    // Smoothly close option action buttons panel to prevent duplicate clicks execution loops
-    document.getElementById("decision-block").style.display = "none";
+if (status === 'APPROVE') {
+approvedCount++;
+cumulativeProfit += currentProfitAmount;
+document.getElementById("summary-approved").innerText = approvedCount;
+document.getElementById("summary-profit").innerText = "₹" + cumulativeProfit;
+showToast("Product Approved & Added to Summary!");
+} else {
+showToast("Product Rejected.");
+}
+document.getElementById("decision-block").style.display = "none";
+}
+function LoggerFallback(message) {
+console.log("Diagnostic Incoming text:", message);
+}
+/* Calculator Logic Functions */
+function openCalculator() {
+const modal = document.getElementById("calculator-modal");
+modal.style.display = "flex";
+calculateSellingMetrics();
+}
+function closeCalculator() {
+const modal = document.getElementById("calculator-modal");
+modal.style.display = "none";
+}
+// Close calculator when tapping outside of the content container
+window.onclick = function(event) {
+const modal = document.getElementById("calculator-modal");
+if (event.target == modal) {
+modal.style.display = "none";
+}
+}
+function calculateSellingMetrics() {
+const supplier = parseFloat(document.getElementById("calc-supplier").value) || 0;
+const shipping = parseFloat(document.getElementById("calc-shipping").value) || 0;
+const packaging = parseFloat(document.getElementById("calc-packaging").value) || 0;
+const marginPercent = parseFloat(document.getElementById("calc-margin").value) || 0;
+const totalCost = supplier + shipping + packaging;
+let sellingPrice = 0;
+if (marginPercent < 100) {
+sellingPrice = totalCost / (1 - (marginPercent / 100));
+} else {
+sellingPrice = totalCost;
+}
+const profit = sellingPrice - totalCost;
+const roi = totalCost > 0 ? (profit / totalCost) * 100 : 0;
+document.getElementById("res-total-cost").innerText = Math.round(totalCost);
+document.getElementById("res-selling-calc").innerText = Math.round(sellingPrice);
+document.getElementById("res-profit-amt").innerText = Math.round(profit);
+document.getElementById("res-calc-roi").innerText = roi.toFixed(1);
+}
+function copyCalculatedPrice() {
+const priceText = document.getElementById("res-selling-calc").innerText;
+const tempInput = document.createElement("input");
+tempInput.value = "₹" + priceText;
+document.body.appendChild(tempInput);
+tempInput.select();
+try {
+document.execCommand("copy");
+showToast("Price Copied to Clipboard!");
+} catch (err) {
+showToast("Failed to copy price.");
+}
+document.body.removeChild(tempInput);
+}
+function addCalculatorToSummary() {
+const calculatedProfit = parseFloat(document.getElementById("res-profit-amt").innerText) || 0;
+approvedCount++;
+cumulativeProfit += calculatedProfit;
+document.getElementById("summary-approved").innerText = approvedCount;
+document.getElementById("summary-profit").innerText = "₹" + cumulativeProfit;
+showToast("Calculated profit added to summary!");
+closeCalculator();
+}
+function showToast(message) {
+const toast = document.getElementById("toast");
+toast.innerText = message;
+toast.style.display = "block";
+setTimeout(() => {
+toast.style.display = "none";
+}, 2500);
 }
 </script>
 </body>
