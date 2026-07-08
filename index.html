@@ -33,6 +33,7 @@
             font-size: 18px; 
             transition: background 0.2s, transform 0.1s; 
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         .card:hover { 
             background: #2f2f2f; 
@@ -40,6 +41,7 @@
         }
         .card:active {
             transform: translateY(1px);
+            background: #3a3a3a;
         }
         .summary { 
             margin-top: 30px; 
@@ -244,14 +246,11 @@
 <div class="header">UltraFS AI</div>
 
 <div class="container">
-    <div class="card" onclick="analyzeProduct()">🔍 Analyze Product</div>
-    <div class="card" onclick="openCalculator()">💰 Selling Price Calculator</div>
-    
-    <!-- Activated Instagram Post Generator Card Mapping -->
-    <div class="card" onclick="openInstagramGenerator()">📱 Instagram Post Generator</div>
-    
-    <!-- Database Card: Your verified Google Spreadsheet Link applied -->
-    <div class="card" onclick="window.open('https://docs.google.com/spreadsheets/d/1nJ5j1wT1MUdoCllVfihYhtHsfMK-iq5lwBhu5dVn24g/edit?usp=drivesdk', '_blank')">📊 Product Database</div>
+    <!-- Added clean structural IDs to bind clicks programmatically via JS -->
+    <div class="card" id="card-analyze">🔍 Analyze Product</div>
+    <div class="card" id="card-calculator">💰 Selling Price Calculator</div>
+    <div class="card" id="card-instagram">📱 Instagram Post Generator</div>
+    <div class="card" id="card-database">📊 Product Database</div>
 
     <div id="result-box">
         <div id="loading-text" style="text-align: center;">⏳ UltraFS AI is analyzing your product metrics...</div>
@@ -272,8 +271,8 @@
             <p id="res-hashtags" style="color: #00bcd4; font-size: 14px;"></p>
             
             <div class="btn-container" id="decision-block">
-                <button class="btn-approve" onclick="recordAction('APPROVE')">🟢 Approve</button>
-                <button class="btn-reject" onclick="recordAction('REJECT')">🔴 Reject</button>
+                <button class="btn-approve" id="btn-approve-action">🟢 Approve</button>
+                <button class="btn-reject" id="btn-reject-action">🔴 Reject</button>
             </div>
         </div>
     </div>
@@ -290,27 +289,27 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3>💰 Margin Calculator</h3>
-            <span class="modal-close" onclick="closeCalculator()">&times;</span>
+            <span class="modal-close" id="close-calc-btn">&times;</span>
         </div>
         
         <div class="form-group">
             <label for="calc-supplier">Supplier Price (₹)</label>
-            <input type="number" id="calc-supplier" placeholder="e.g. 500" value="500" oninput="calculateSellingMetrics()">
+            <input type="number" id="calc-supplier" placeholder="e.g. 500" value="500">
         </div>
         
         <div class="form-group">
             <label for="calc-shipping">Shipping Charges (₹)</label>
-            <input type="number" id="calc-shipping" placeholder="e.g. 70" value="70" oninput="calculateSellingMetrics()">
+            <input type="number" id="calc-shipping" placeholder="e.g. 70" value="70">
         </div>
         
         <div class="form-group">
             <label for="calc-packaging">Packaging & Handling (₹)</label>
-            <input type="number" id="calc-packaging" placeholder="e.g. 30" value="30" oninput="calculateSellingMetrics()">
+            <input type="number" id="calc-packaging" placeholder="e.g. 30" value="30">
         </div>
         
         <div class="form-group">
             <label for="calc-margin">Target Profit Margin (%)</label>
-            <input type="number" id="calc-margin" placeholder="e.g. 40" value="40" oninput="calculateSellingMetrics()">
+            <input type="number" id="calc-margin" placeholder="e.g. 40" value="40">
         </div>
 
         <div class="calc-results">
@@ -333,8 +332,8 @@
         </div>
         
         <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-            <span class="action-link" onclick="copyCalculatedPrice()">📋 Copy Price</span>
-            <span class="action-link" onclick="addCalculatorToSummary()">➕ Add to Summary</span>
+            <span class="action-link" id="copy-calc-btn">📋 Copy Price</span>
+            <span class="action-link" id="add-summary-btn" style="color: #00ff88;">➕ Add to Summary</span>
         </div>
     </div>
 </div>
@@ -344,7 +343,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <h3>📱 Instagram Post Layout</h3>
-            <span class="modal-close" onclick="closeInstagramGenerator()">&times;</span>
+            <span class="modal-close" id="close-ig-btn">&times;</span>
         </div>
         
         <div class="form-group">
@@ -362,7 +361,7 @@
             <input type="text" id="ig-custom-hook" placeholder="e.g. Free shipping today! DM us to order">
         </div>
         
-        <button class="btn-approve" style="width:100%; margin-bottom:15px; background: gold; color: black; font-weight: bold;" onclick="generateInstagramPostTemplate()">✨ Compile Copywriting Post</button>
+        <button class="btn-approve" id="btn-compile-ig" style="width:100%; margin-bottom:15px; background: gold; color: black; font-weight: bold;">✨ Compile Copywriting Post</button>
 
         <div class="calc-results" style="border-left: 4px solid #e1306c; background: #111;">
             <label style="font-size: 12px; color: gold; display:block; margin-bottom:5px; font-weight: bold;">📝 Ready Post Output Preview:</label>
@@ -370,7 +369,7 @@
         </div>
         
         <div style="display: flex; justify-content: space-between; margin-top: 15px;">
-            <span class="action-link" style="color: #00ff88;" onclick="copyInstagramPost()">📋 Copy Full Text Description</span>
+            <span class="action-link" id="copy-ig-btn" style="color: #00ff88;">📋 Copy Full Text Description</span>
         </div>
     </div>
 </div>
@@ -394,7 +393,39 @@ let currentProfitAmount = 0;
 let approvedCount = 0;
 let cumulativeProfit = 0;
 
-// 3. PRODUCT ANALYZER SYSTEM
+// 3. PROGRAMMATIC BUTTON EVENT BINDINGS
+document.addEventListener("DOMContentLoaded", function() {
+    // Bind main action cards
+    document.getElementById("card-analyze").addEventListener("click", analyzeProduct);
+    document.getElementById("card-calculator").addEventListener("click", openCalculator);
+    document.getElementById("card-instagram").addEventListener("click", openInstagramGenerator);
+    
+    document.getElementById("card-database").addEventListener("click", function() {
+        window.open('https://docs.google.com/spreadsheets/d/1nJ5j1wT1MUdoCllVfihYhtHsfMK-iq5lwBhu5dVn24g/edit?usp=drivesdk', '_blank');
+    });
+
+    // Bind action decision buttons
+    document.getElementById("btn-approve-action").addEventListener("click", function() { recordAction('APPROVE'); });
+    document.getElementById("btn-reject-action").addEventListener("click", function() { recordAction('REJECT'); });
+
+    // Bind calculator input listeners
+    document.getElementById("calc-supplier").addEventListener("input", calculateSellingMetrics);
+    document.getElementById("calc-shipping").addEventListener("input", calculateSellingMetrics);
+    document.getElementById("calc-packaging").addEventListener("input", calculateSellingMetrics);
+    document.getElementById("calc-margin").addEventListener("input", calculateSellingMetrics);
+
+    // Bind calculator overlay closing and copying buttons
+    document.getElementById("close-calc-btn").addEventListener("click", closeCalculator);
+    document.getElementById("copy-calc-btn").addEventListener("click", copyCalculatedPrice);
+    document.getElementById("add-summary-btn").addEventListener("click", addCalculatorToSummary);
+
+    // Bind Instagram modal buttons
+    document.getElementById("close-ig-btn").addEventListener("click", closeInstagramGenerator);
+    document.getElementById("btn-compile-ig").addEventListener("click", generateInstagramPostTemplate);
+    document.getElementById("copy-ig-btn").addEventListener("click", copyInstagramPost);
+});
+
+// 4. PRODUCT ANALYZER SYSTEM
 async function analyzeProduct() {
   const product = prompt("Paste Meesho or GlowRoad product link:");
   if (!product) return;
@@ -420,6 +451,7 @@ async function analyzeProduct() {
     );
 
     const text = await response.text();
+    LoggerFallback(text); 
     
     let data;
     try {
@@ -481,7 +513,11 @@ function recordAction(status) {
     document.getElementById("decision-block").style.display = "none";
 }
 
-/* 4. MARGIN CALCULATOR SYSTEM */
+function LoggerFallback(message) {
+    console.log("Diagnostic Incoming text:", message);
+}
+
+/* 5. MARGIN CALCULATOR SYSTEM */
 function openCalculator() {
     const modal = document.getElementById("calculator-modal");
     if (modal) {
@@ -492,46 +528,4 @@ function openCalculator() {
 
 function closeCalculator() {
     const modal = document.getElementById("calculator-modal");
-    if (modal) {
-        modal.style.display = "none";
-    }
-}
-
-function calculateSellingMetrics() {
-    const supplier = parseFloat(document.getElementById("calc-supplier").value) || 0;
-    const shipping = parseFloat(document.getElementById("calc-shipping").value) || 0;
-    const packaging = parseFloat(document.getElementById("calc-packaging").value) || 0;
-    const marginPercent = parseFloat(document.getElementById("calc-margin").value) || 0;
-
-    const totalCost = supplier + shipping + packaging;
-    let sellingPrice = marginPercent < 100 ? totalCost / (1 - (marginPercent / 100)) : totalCost;
-
-    const profit = sellingPrice - totalCost;
-    const roi = totalCost > 0 ? (profit / totalCost) * 100 : 0;
-
-    document.getElementById("res-total-cost").innerText = Math.round(totalCost);
-    document.getElementById("res-selling-calc").innerText = Math.round(sellingPrice);
-    document.getElementById("res-profit-amt").innerText = Math.round(profit);
-    document.getElementById("res-calc-roi").innerText = roi.toFixed(1);
-}
-
-function copyCalculatedPrice() {
-    const priceText = document.getElementById("res-selling-calc").innerText;
-    executeClipboardCopy("₹" + priceText, "Price Copied to Clipboard!");
-}
-
-function addCalculatorToSummary() {
-    const calculatedProfit = parseFloat(document.getElementById("res-profit-amt").innerText) || 0;
-    approvedCount++;
-    cumulativeProfit += calculatedProfit;
     
-    document.getElementById("summary-approved").innerText = approvedCount;
-    document.getElementById("summary-profit").innerText = "₹" + cumulativeProfit;
-    
-    showToast("Calculated profit added to summary!");
-    closeCalculator();
-}
-
-/* 5. ACTIVATED INSTAGRAM POST GENERATOR CONTROLLER */
-function openInstagramGenerator() {
-    const modal
