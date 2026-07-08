@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -246,7 +247,6 @@
 <div class="header">UltraFS AI</div>
 
 <div class="container">
-    <!-- Added clean structural IDs to bind clicks programmatically via JS -->
     <div class="card" id="card-analyze">🔍 Analyze Product</div>
     <div class="card" id="card-calculator">💰 Selling Price Calculator</div>
     <div class="card" id="card-instagram">📱 Instagram Post Generator</div>
@@ -395,7 +395,6 @@ let cumulativeProfit = 0;
 
 // 3. PROGRAMMATIC BUTTON EVENT BINDINGS
 document.addEventListener("DOMContentLoaded", function() {
-    // Bind main action cards
     document.getElementById("card-analyze").addEventListener("click", analyzeProduct);
     document.getElementById("card-calculator").addEventListener("click", openCalculator);
     document.getElementById("card-instagram").addEventListener("click", openInstagramGenerator);
@@ -404,28 +403,24 @@ document.addEventListener("DOMContentLoaded", function() {
         window.open('https://docs.google.com/spreadsheets/d/1nJ5j1wT1MUdoCllVfihYhtHsfMK-iq5lwBhu5dVn24g/edit?usp=drivesdk', '_blank');
     });
 
-    // Bind action decision buttons
     document.getElementById("btn-approve-action").addEventListener("click", function() { recordAction('APPROVE'); });
     document.getElementById("btn-reject-action").addEventListener("click", function() { recordAction('REJECT'); });
 
-    // Bind calculator input listeners
     document.getElementById("calc-supplier").addEventListener("input", calculateSellingMetrics);
     document.getElementById("calc-shipping").addEventListener("input", calculateSellingMetrics);
     document.getElementById("calc-packaging").addEventListener("input", calculateSellingMetrics);
     document.getElementById("calc-margin").addEventListener("input", calculateSellingMetrics);
 
-    // Bind calculator overlay closing and copying buttons
     document.getElementById("close-calc-btn").addEventListener("click", closeCalculator);
     document.getElementById("copy-calc-btn").addEventListener("click", copyCalculatedPrice);
     document.getElementById("add-summary-btn").addEventListener("click", addCalculatorToSummary);
 
-    // Bind Instagram modal buttons
     document.getElementById("close-ig-btn").addEventListener("click", closeInstagramGenerator);
     document.getElementById("btn-compile-ig").addEventListener("click", generateInstagramPostTemplate);
     document.getElementById("copy-ig-btn").addEventListener("click", copyInstagramPost);
 });
 
-// 4. PRODUCT ANALYZER SYSTEM
+// 4. PRODUCT ANALYZER SYSTEM WITH SMART MULTI-KEY FALLBACKS
 async function analyzeProduct() {
   const product = prompt("Paste Meesho or GlowRoad product link:");
   if (!product) return;
@@ -470,26 +465,41 @@ async function analyzeProduct() {
     contentDiv.style.display = "block";
     decisionBlock.style.display = "flex";
 
-    currentProfitAmount = Number(data.estimatedProfit) || 0;
+    // --- SMART PARSING LAYER (Checks for camelCase, snake_case, and lowercase keys) ---
+    const rawProdName = data.productName || data.product_name || data.productname || "Product Analysis";
+    const rawCategory = data.category || "N/A";
+    const rawScore = data.score || data.resale_score || data.resalescore || 0;
+    const rawTrend = data.trendScore || data.trend_score || data.trendscore || 0;
+    const rawSupplierPrice = data.supplierPrice || data.supplier_price || data.supplierprice || data.supplierCost || data.supplier_cost || data.suppliercost || 0;
+    const rawSellingPrice = data.sellingPrice || data.selling_price || data.sellingprice || 0;
+    
+    currentProfitAmount = Number(data.estimatedProfit || data.estimated_profit || data.estimatedprofit || (rawSellingPrice - rawSupplierPrice)) || 0;
+    
+    const rawCompetition = data.competition || "N/A";
+    const rawTargetAudience = data.targetAudience || data.target_audience || data.targetaudience || "N/A";
+    const rawRecommendation = (data.recommendation || data.decision || "PENDING").toUpperCase();
+    const rawReason = data.reason || data.analysis || "N/A";
+    const rawInstagramCaption = data.instagramCaption || data.instagram_caption || data.instagramcaption || "N/A";
 
-    document.getElementById("res-productName").innerText = "📦 " + (data.productName || "Product Analysis");
-    document.getElementById("res-category").innerText = data.category || "N/A";
-    document.getElementById("res-score").innerText = data.score || 0;
-    document.getElementById("res-trendScore").innerText = data.trendScore || 0;
-    document.getElementById("res-supplierPrice").innerText = data.supplierPrice || 0;
-    document.getElementById("res-sellingPrice").innerText = data.sellingPrice || 0;
+    // Update screen elements safely
+    document.getElementById("res-productName").innerText = "📦 " + rawProdName;
+    document.getElementById("res-category").innerText = rawCategory;
+    document.getElementById("res-score").innerText = rawScore;
+    document.getElementById("res-trendScore").innerText = rawTrend;
+    document.getElementById("res-supplierPrice").innerText = rawSupplierPrice;
+    document.getElementById("res-sellingPrice").innerText = rawSellingPrice;
     document.getElementById("res-estimatedProfit").innerText = "₹" + currentProfitAmount;
-    document.getElementById("res-competition").innerText = data.competition || "N/A";
-    document.getElementById("res-targetAudience").innerText = data.targetAudience || "N/A";
-    document.getElementById("res-reason").innerText = data.reason || "N/A";
-    document.getElementById("res-instagramCaption").innerText = data.instagramCaption || "N/A";
+    document.getElementById("res-competition").innerText = rawCompetition;
+    document.getElementById("res-targetAudience").innerText = rawTargetAudience;
+    document.getElementById("res-reason").innerText = rawReason;
+    document.getElementById("res-instagramCaption").innerText = rawInstagramCaption;
     
     const hashText = Array.isArray(data.hashtags) ? data.hashtags.join(' ') : (data.hashtags || '');
     document.getElementById("res-hashtags").innerText = hashText;
 
     const recBadge = document.getElementById("res-recommendation");
-    recBadge.innerText = data.recommendation || "PENDING";
-    if (data.recommendation === "BUY") {
+    recBadge.innerText = rawRecommendation;
+    if (rawRecommendation === "BUY" || rawRecommendation === "APPROVE") {
         recBadge.style.background = "#1b5e20";
     } else {
         recBadge.style.background = "#b71c1c";
@@ -528,23 +538,16 @@ function openCalculator() {
 
 function closeCalculator() {
     const modal = document.getElementById("calculator-modal");
-     if (modal) {
+    if (modal) {
         modal.style.display = "none";
     }
 }
 
 function calculateSellingMetrics() {
-    const supplierInput = document.getElementById("calc-supplier");
-    const shippingInput = document.getElementById("calc-shipping");
-    const packagingInput = document.getElementById("calc-packaging");
-    const marginInput = document.getElementById("calc-margin");
-
-    if (!supplierInput || !shippingInput || !packagingInput || !marginInput) return;
-
-    const supplier = parseFloat(supplierInput.value) || 0;
-    const shipping = parseFloat(shippingInput.value) || 0;
-    const packaging = parseFloat(packagingInput.value) || 0;
-    const marginPercent = parseFloat(marginInput.value) || 0;
+    const supplier = parseFloat(document.getElementById("calc-supplier").value) || 0;
+    const shipping = parseFloat(document.getElementById("calc-shipping").value) || 0;
+    const packaging = parseFloat(document.getElementById("calc-packaging").value) || 0;
+    const marginPercent = parseFloat(document.getElementById("calc-margin").value) || 0;
 
     const totalCost = supplier + shipping + packaging;
     let sellingPrice = marginPercent < 100 ? totalCost / (1 - (marginPercent / 100)) : totalCost;
@@ -559,17 +562,12 @@ function calculateSellingMetrics() {
 }
 
 function copyCalculatedPrice() {
-    const element = document.getElementById("res-selling-calc");
-    if (!element) return;
-    const priceText = element.innerText;
+    const priceText = document.getElementById("res-selling-calc").innerText;
     executeClipboardCopy("₹" + priceText, "Price Copied to Clipboard!");
 }
 
 function addCalculatorToSummary() {
-    const element = document.getElementById("res-profit-amt");
-    if (!element) return;
-
-    const calculatedProfit = parseFloat(element.innerText) || 0;
+    const calculatedProfit = parseFloat(document.getElementById("res-profit-amt").innerText) || 0;
     approvedCount++;
     cumulativeProfit += calculatedProfit;
     
@@ -586,7 +584,6 @@ function openInstagramGenerator() {
     if (!modal) return;
     modal.style.display = "flex";
     
-    // Auto-fetch parameters from active AI assessment card if present
     const resNameElement = document.getElementById("res-productName");
     const resPriceElement = document.getElementById("res-sellingPrice");
     
@@ -613,7 +610,6 @@ function generateInstagramPostTemplate() {
     let aiCaption = document.getElementById("res-instagramCaption").innerText;
     let aiHashtags = document.getElementById("res-hashtags").innerText;
     
-    // Fallback beautiful template structure if no active AI generation session is cached
     if (!aiCaption || aiCaption === "N/A" || aiCaption === "") {
         aiCaption = "Upgrade your style with this beautiful piece! Lightweight, durable, and crafted for maximum comfort. Super easy to pair and style.";
         aiHashtags = "#fashionreseller #onlineshoppingindia #instafashion #trendingoutfits #boutiqueshopping #resellerindia #shopthelook";
