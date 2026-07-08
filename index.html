@@ -528,4 +528,143 @@ function openCalculator() {
 
 function closeCalculator() {
     const modal = document.getElementById("calculator-modal");
+     if (modal) {
+        modal.style.display = "none";
+    }
+}
+
+function calculateSellingMetrics() {
+    const supplierInput = document.getElementById("calc-supplier");
+    const shippingInput = document.getElementById("calc-shipping");
+    const packagingInput = document.getElementById("calc-packaging");
+    const marginInput = document.getElementById("calc-margin");
+
+    if (!supplierInput || !shippingInput || !packagingInput || !marginInput) return;
+
+    const supplier = parseFloat(supplierInput.value) || 0;
+    const shipping = parseFloat(shippingInput.value) || 0;
+    const packaging = parseFloat(packagingInput.value) || 0;
+    const marginPercent = parseFloat(marginInput.value) || 0;
+
+    const totalCost = supplier + shipping + packaging;
+    let sellingPrice = marginPercent < 100 ? totalCost / (1 - (marginPercent / 100)) : totalCost;
+
+    const profit = sellingPrice - totalCost;
+    const roi = totalCost > 0 ? (profit / totalCost) * 100 : 0;
+
+    document.getElementById("res-total-cost").innerText = Math.round(totalCost);
+    document.getElementById("res-selling-calc").innerText = Math.round(sellingPrice);
+    document.getElementById("res-profit-amt").innerText = Math.round(profit);
+    document.getElementById("res-calc-roi").innerText = roi.toFixed(1);
+}
+
+function copyCalculatedPrice() {
+    const element = document.getElementById("res-selling-calc");
+    if (!element) return;
+    const priceText = element.innerText;
+    executeClipboardCopy("₹" + priceText, "Price Copied to Clipboard!");
+}
+
+function addCalculatorToSummary() {
+    const element = document.getElementById("res-profit-amt");
+    if (!element) return;
+
+    const calculatedProfit = parseFloat(element.innerText) || 0;
+    approvedCount++;
+    cumulativeProfit += calculatedProfit;
     
+    document.getElementById("summary-approved").innerText = approvedCount;
+    document.getElementById("summary-profit").innerText = "₹" + cumulativeProfit;
+    
+    showToast("Calculated profit added to summary!");
+    closeCalculator();
+}
+
+/* 6. INSTAGRAM POST GENERATOR CONTROLLER */
+function openInstagramGenerator() {
+    const modal = document.getElementById("instagram-modal");
+    if (!modal) return;
+    modal.style.display = "flex";
+    
+    // Auto-fetch parameters from active AI assessment card if present
+    const resNameElement = document.getElementById("res-productName");
+    const resPriceElement = document.getElementById("res-sellingPrice");
+    
+    const resName = resNameElement ? resNameElement.innerText.replace("📦 ", "") : "";
+    const resPrice = resPriceElement ? resPriceElement.innerText : "";
+    
+    if (resName && resName !== "Product Analysis" && resName !== "N/A" && resName !== "Product Metrics") {
+        document.getElementById("ig-product-name").value = resName;
+        document.getElementById("ig-price").value = resPrice;
+        document.getElementById("ig-custom-hook").value = "🔥 Premium Quality! Trending Collection DM to order.";
+    }
+    generateInstagramPostTemplate();
+}
+
+function closeInstagramGenerator() {
+    document.getElementById("instagram-modal").style.display = "none";
+}
+
+function generateInstagramPostTemplate() {
+    const name = document.getElementById("ig-product-name").value || "Premium Fashion Wear";
+    const price = document.getElementById("ig-price").value || "DM for Price";
+    const hook = document.getElementById("ig-custom-hook").value || "DM us with your size to order immediately!";
+    
+    let aiCaption = document.getElementById("res-instagramCaption").innerText;
+    let aiHashtags = document.getElementById("res-hashtags").innerText;
+    
+    // Fallback beautiful template structure if no active AI generation session is cached
+    if (!aiCaption || aiCaption === "N/A" || aiCaption === "") {
+        aiCaption = "Upgrade your style with this beautiful piece! Lightweight, durable, and crafted for maximum comfort. Super easy to pair and style.";
+        aiHashtags = "#fashionreseller #onlineshoppingindia #instafashion #trendingoutfits #boutiqueshopping #resellerindia #shopthelook";
+    }
+    
+    const fullyCompiledPost = `✨ NEW ARRIVAL ✨\n\n📦 Item: ${name}\n💰 Price: ₹${price}\n\n📢 Offer: ${hook}\n\n📝 Product Details:\n"${aiCaption}"\n\n🛍️ HOW TO ORDER:\nTake a screenshot and send it directly to our DM! Or tap the link in our bio.\n\n${aiHashtags}`;
+    
+    document.getElementById("res-ig-preview").innerText = fullyCompiledPost;
+    showToast("Post Compiled!");
+}
+
+function copyInstagramPost() {
+    const postContent = document.getElementById("res-ig-preview").innerText;
+    if(postContent.includes("Your compiled Instagram post")) {
+        showToast("Generate a post description first!");
+        return;
+    }
+    executeClipboardCopy(postContent, "Full Instagram Caption Copied!");
+}
+
+// Global modal window overlay backdrop tap dismissions
+window.addEventListener("click", function(event) {
+    const calcModal = document.getElementById("calculator-modal");
+    const igModal = document.getElementById("instagram-modal");
+    if (event.target === calcModal) calcModal.style.display = "none";
+    if (event.target === igModal) igModal.style.display = "none";
+});
+
+// Helper Engine for Clipboard Handling
+function executeClipboardCopy(textToCopy, successMessage) {
+    const tempInput = document.createElement("textarea");
+    tempInput.value = textToCopy;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    try {
+        document.execCommand("copy");
+        showToast(successMessage);
+    } catch (err) {
+        showToast("Error executing clipboard copy action.");
+    }
+    document.body.removeChild(tempInput);
+}
+
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    if (toast) {
+        toast.innerText = message;
+        toast.style.display = "block";
+        setTimeout(() => { toast.style.display = "none"; }, 2500);
+    }
+}
+</script>
+</body>
+</html>
