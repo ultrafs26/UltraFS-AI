@@ -110,7 +110,7 @@
             background: #b71c1c; 
         }
 
-        /* Modal Overlay & Card Styling for Calculator */
+        /* Modal Overlay & Card Styling for Calculator and Instagram */
         .modal {
             display: none;
             position: fixed;
@@ -246,9 +246,11 @@
 <div class="container">
     <div class="card" onclick="analyzeProduct()">🔍 Analyze Product</div>
     <div class="card" onclick="openCalculator()">💰 Selling Price Calculator</div>
-    <div class="card">📱 Instagram Post Generator</div>
     
-    <!-- Database Card: Replace your sheet URL inside open() -->
+    <!-- Activated Instagram Post Generator Card Mapping -->
+    <div class="card" onclick="openInstagramGenerator()">📱 Instagram Post Generator</div>
+    
+    <!-- Database Card: Your verified Google Spreadsheet Link applied -->
     <div class="card" onclick="window.open('https://docs.google.com/spreadsheets/d/1nJ5j1wT1MUdoCllVfihYhtHsfMK-iq5lwBhu5dVn24g/edit?usp=drivesdk', '_blank')">📊 Product Database</div>
 
     <div id="result-box">
@@ -337,6 +339,42 @@
     </div>
 </div>
 
+<!-- Interactive Instagram Template Post Generator Modal UI -->
+<div id="instagram-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📱 Instagram Post Layout</h3>
+            <span class="modal-close" onclick="closeInstagramGenerator()">&times;</span>
+        </div>
+        
+        <div class="form-group">
+            <label for="ig-product-name">Product Label / Title</label>
+            <input type="text" id="ig-product-name" placeholder="e.g. Premium Silk Saree">
+        </div>
+        
+        <div class="form-group">
+            <label for="ig-price">Selling Retail Price (₹)</label>
+            <input type="text" id="ig-price" placeholder="e.g. 999">
+        </div>
+
+        <div class="form-group">
+            <label for="ig-custom-hook">Urgency Hook / Offer Line</label>
+            <input type="text" id="ig-custom-hook" placeholder="e.g. Free shipping today! DM us to order">
+        </div>
+        
+        <button class="btn-approve" style="width:100%; margin-bottom:15px; background: gold; color: black; font-weight: bold;" onclick="generateInstagramPostTemplate()">✨ Compile Copywriting Post</button>
+
+        <div class="calc-results" style="border-left: 4px solid #e1306c; background: #111;">
+            <label style="font-size: 12px; color: gold; display:block; margin-bottom:5px; font-weight: bold;">📝 Ready Post Output Preview:</label>
+            <div id="res-ig-preview" class="caption-box" style="background:#1a1a1a; max-height: 180px; overflow-y: auto; font-size: 14px; line-height: 1.5; border-color: #e1306c;">Your compiled Instagram post container will show here...</div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+            <span class="action-link" style="color: #00ff88;" onclick="copyInstagramPost()">📋 Copy Full Text Description</span>
+        </div>
+    </div>
+</div>
+
 <!-- Custom Toast Message Holder -->
 <div id="toast" class="toast-msg"></div>
     
@@ -373,7 +411,7 @@ async function analyzeProduct() {
 
   try {
     const response = await fetch(
-      "https://script.google.com/macros/s/AKfycbxjeqUZrmsfl7cSE4RV6Ye88S-uwMMrfG5K3XtzuLyuUD0pZbX9sZxv3x-RQPRop87E/exec", // Make sure this matches your deployed Apps Script URL
+      "https://script.google.com/macros/s/AKfycbxjeqUZrmsfl7cSE4RV6Ye88S-uwMMrfG5K3XtzuLyuUD0pZbX9sZxv3x-RQPRop87E/exec", 
       {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=UTF-8" },
@@ -382,7 +420,6 @@ async function analyzeProduct() {
     );
 
     const text = await response.text();
-    LoggerFallback(text); 
     
     let data;
     try {
@@ -460,35 +497,14 @@ function closeCalculator() {
     }
 }
 
-// Global modal background tap dismission handler
-window.addEventListener("click", function(event) {
-    const modal = document.getElementById("calculator-modal");
-    if (event.target === modal) {
-        modal.style.display = "none";
-    }
-});
-
 function calculateSellingMetrics() {
-    const supplierInput = document.getElementById("calc-supplier");
-    const shippingInput = document.getElementById("calc-shipping");
-    const packagingInput = document.getElementById("calc-packaging");
-    const marginInput = document.getElementById("calc-margin");
-
-    if (!supplierInput || !shippingInput || !packagingInput || !marginInput) return;
-
-    const supplier = parseFloat(supplierInput.value) || 0;
-    const shipping = parseFloat(shippingInput.value) || 0;
-    const packaging = parseFloat(packagingInput.value) || 0;
-    const marginPercent = parseFloat(marginInput.value) || 0;
+    const supplier = parseFloat(document.getElementById("calc-supplier").value) || 0;
+    const shipping = parseFloat(document.getElementById("calc-shipping").value) || 0;
+    const packaging = parseFloat(document.getElementById("calc-packaging").value) || 0;
+    const marginPercent = parseFloat(document.getElementById("calc-margin").value) || 0;
 
     const totalCost = supplier + shipping + packaging;
-    let sellingPrice = 0;
-    
-    if (marginPercent < 100) {
-        sellingPrice = totalCost / (1 - (marginPercent / 100));
-    } else {
-        sellingPrice = totalCost; 
-    }
+    let sellingPrice = marginPercent < 100 ? totalCost / (1 - (marginPercent / 100)) : totalCost;
 
     const profit = sellingPrice - totalCost;
     const roi = totalCost > 0 ? (profit / totalCost) * 100 : 0;
@@ -500,28 +516,12 @@ function calculateSellingMetrics() {
 }
 
 function copyCalculatedPrice() {
-    const element = document.getElementById("res-selling-calc");
-    if (!element) return;
-    
-    const priceText = element.innerText;
-    const tempInput = document.createElement("input");
-    tempInput.value = "₹" + priceText;
-    document.body.appendChild(tempInput);
-    tempInput.select();
-    try {
-        document.execCommand("copy");
-        showToast("Price Copied to Clipboard!");
-    } catch (err) {
-        showToast("Failed to copy price.");
-    }
-    document.body.removeChild(tempInput);
+    const priceText = document.getElementById("res-selling-calc").innerText;
+    executeClipboardCopy("₹" + priceText, "Price Copied to Clipboard!");
 }
 
 function addCalculatorToSummary() {
-    const element = document.getElementById("res-profit-amt");
-    if (!element) return;
-
-    const calculatedProfit = parseFloat(element.innerText) || 0;
+    const calculatedProfit = parseFloat(document.getElementById("res-profit-amt").innerText) || 0;
     approvedCount++;
     cumulativeProfit += calculatedProfit;
     
@@ -532,16 +532,6 @@ function addCalculatorToSummary() {
     closeCalculator();
 }
 
-function showToast(message) {
-    const toast = document.getElementById("toast");
-    if (toast) {
-        toast.innerText = message;
-        toast.style.display = "block";
-        setTimeout(() => {
-            toast.style.display = "none";
-        }, 2500);
-    }
-}
-</script>
-</body>
-</html>
+/* 5. ACTIVATED INSTAGRAM POST GENERATOR CONTROLLER */
+function openInstagramGenerator() {
+    const modal
